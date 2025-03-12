@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using UnityEngine.EventSystems;
+using UnityEngine.SceneManagement;
 using System.Collections.Generic; // 🔥 Add this to fix List<> error
 public class NPCDialogue : MonoBehaviour
 {
@@ -14,10 +15,12 @@ public class NPCDialogue : MonoBehaviour
     private static Button closeButton;
     private static Button accuseButton;
     private static Button[] questionButtons; // Array for question buttons
-
+    private Animator animator;
+    private static Button restartButton; 
     void Start()
     {
         Debug.Log("NPCDialogue Start() running for: " + gameObject.name);
+        animator = GetComponent<Animator>(); // Ensure NPC has an Animator component
 
         if (dialogueUI == null) 
         {
@@ -36,6 +39,11 @@ public class NPCDialogue : MonoBehaviour
 
             // 🔹 Handle close button separately
             closeButton = GameObject.Find("CloseButton")?.GetComponent<Button>();
+            restartButton = GameObject.Find("RestartButton")?.GetComponent<Button>();
+            if (restartButton != null) {
+                restartButton.gameObject.SetActive(false);
+                restartButton.GetComponent<Button>().onClick.AddListener(RestartGame);
+            }
             if (closeButton != null)
             {
                 closeButton.onClick.RemoveAllListeners();
@@ -178,6 +186,7 @@ public class NPCDialogue : MonoBehaviour
         accuseButton.onClick.RemoveAllListeners();
         accuseButton.onClick.AddListener(() => currentNPC.AccuseNPC()); // 🔥 Correctly references current NPC
         Debug.Log("✅ Accuse button now accuses " + currentNPC.npcName);
+
     }
 
 
@@ -229,6 +238,16 @@ public class NPCDialogue : MonoBehaviour
         {
             dialogueText.text = "You got it! I am the mole!";
             Debug.Log($"✅ Correct! {attributes.name} is the mole.");
+            
+            animator.SetBool("found", true); 
+            if (restartButton != null) 
+            {
+                CloseDialogue();
+                restartButton.gameObject.SetActive(true);
+            } 
+            else {
+                Debug.Log("Restart button not found.");
+            }
         }
         else
         {
@@ -238,7 +257,10 @@ public class NPCDialogue : MonoBehaviour
 
 
 
-
+    void RestartGame()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name); // ✅ Reloads the scene
+    }
     void CloseDialogue()
     {
         dialogueUI.SetActive(false);
