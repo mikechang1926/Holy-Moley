@@ -242,8 +242,19 @@ public class NPCDialogue : MonoBehaviour
             animator.SetBool("found", true); 
             if (restartButton != null) 
             {
-                CloseDialogue();
+                // CloseDialogue();
                 restartButton.gameObject.SetActive(true);
+                accuseButton.gameObject.SetActive(false);
+                closeButton.gameObject.SetActive(false);
+     
+                // 🔹 Setup question button listeners
+                foreach (Button button in questionButtons)
+                {
+                    button.gameObject.SetActive(false);
+                }
+
+
+
             } 
             else {
                 Debug.Log("Restart button not found.");
