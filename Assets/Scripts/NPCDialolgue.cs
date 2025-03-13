@@ -162,7 +162,7 @@ public class NPCDialogue : MonoBehaviour
 
         Debug.Log("✅ Showing dialogue for: " + npcName);
         npcNameText.text = npcName;
-        dialogueText.text = "Hello, traveler! What brings you here?";
+        StartCoroutine(FadeInText("Hello, traveler! What brings you here?"));
         dialogueUI.SetActive(true);
 
         // 🛠 FIX: Capture the current NPC correctly
@@ -224,7 +224,7 @@ public class NPCDialogue : MonoBehaviour
         Debug.Log("✅ GetAnswer('" + question + "') Output: " + response);
 
         // Display response in UI
-        dialogueText.text = response;
+        StartCoroutine(FadeInText(response));
     }
 
 
@@ -244,7 +244,7 @@ public class NPCDialogue : MonoBehaviour
 
         if (attributes.name == mole.name) // ✅ Compare by name instead of reference
         {
-            dialogueText.text = "You got it! I am the mole!";
+            StartCoroutine(FadeInText("You got it! I am the mole!"));
             dialogueText.alignment = TextAlignmentOptions.Bottom; // 🔥 Align to bottom center
 
             Debug.Log($"✅ Correct! {attributes.name} is the mole.");
@@ -284,7 +284,7 @@ public class NPCDialogue : MonoBehaviour
         }
         else
         {
-            dialogueText.text = $"I'm not the mole! Try again. ";
+            StartCoroutine(FadeInText($"I'm not the mole! Try again. "));
         }
     }
 
@@ -303,4 +303,28 @@ public class NPCDialogue : MonoBehaviour
         }
         animator.SetBool("selected", false);
     }
+
+    private IEnumerator<string> FadeInText(string newText)
+    {
+        dialogueText.text = newText;
+        Color textColor = dialogueText.color;
+        textColor.a = 0; // Start fully transparent
+        dialogueText.color = textColor;
+
+        float fadeDuration = 0.5f; // Adjust for desired speed
+        float elapsedTime = 0;
+
+        while (elapsedTime < fadeDuration)
+        {
+            elapsedTime += Time.deltaTime;
+            textColor.a = Mathf.Lerp(0, 1, elapsedTime / fadeDuration);
+            dialogueText.color = textColor;
+            yield return null;
+        }
+        
+        textColor.a = 1; // Ensure it's fully visible
+        dialogueText.color = textColor;
+    }
+
+
 }
