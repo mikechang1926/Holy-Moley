@@ -17,14 +17,18 @@ public class NPCDialogue : MonoBehaviour
     private static Button[] questionButtons; // Array for question buttons
     private Animator animator;
     private static Button restartButton; 
+    private static Image dialogueUIImage; 
     void Start()
     {
+
+
         Debug.Log("NPCDialogue Start() running for: " + gameObject.name);
         animator = GetComponent<Animator>(); // Ensure NPC has an Animator component
 
         if (dialogueUI == null) 
         {
             dialogueUI = GameObject.Find("DialogueUI");
+            dialogueUIImage = dialogueUI.GetComponent<Image>();
             if (dialogueUI == null)
             {
                 Debug.LogError("❌ DialogueUI not found! Make sure it's named correctly in the Hierarchy.");
@@ -186,7 +190,11 @@ public class NPCDialogue : MonoBehaviour
         accuseButton.onClick.RemoveAllListeners();
         accuseButton.onClick.AddListener(() => currentNPC.AccuseNPC()); // 🔥 Correctly references current NPC
         Debug.Log("✅ Accuse button now accuses " + currentNPC.npcName);
-
+        animator.SetBool("selected", true);
+        if (CameraZoom.Instance != null)
+        {
+            CameraZoom.Instance.ZoomForDialogue(transform);
+        }
     }
 
 
@@ -237,6 +245,8 @@ public class NPCDialogue : MonoBehaviour
         if (attributes.name == mole.name) // ✅ Compare by name instead of reference
         {
             dialogueText.text = "You got it! I am the mole!";
+            dialogueText.alignment = TextAlignmentOptions.Bottom; // 🔥 Align to bottom center
+
             Debug.Log($"✅ Correct! {attributes.name} is the mole.");
             
             animator.SetBool("found", true); 
@@ -252,12 +262,24 @@ public class NPCDialogue : MonoBehaviour
                 {
                     button.gameObject.SetActive(false);
                 }
-
+                CameraZoom.Instance.ZoomToMole(transform);
 
 
             } 
             else {
                 Debug.Log("Restart button not found.");
+            }
+            // 🔥 Reduce the opacity of DialogueUI's background
+            if (dialogueUIImage != null)
+            {
+                Debug.Log("🎨 Changing DialogueUI background opacity.");
+                Color newColor = dialogueUIImage.color;
+                newColor.a = 0.1f; // 🔥 Adjust transparency (0 = invisible, 1 = fully visible)
+                dialogueUIImage.color = newColor;
+            }
+            else
+            {
+                Debug.LogError("❌ dialogueUIImage is NULL in AccuseNPC()!");
             }
         }
         else
@@ -275,5 +297,10 @@ public class NPCDialogue : MonoBehaviour
     void CloseDialogue()
     {
         dialogueUI.SetActive(false);
+        if (CameraZoom.Instance != null)
+        {
+            CameraZoom.Instance.ResetCamera();
+        }
+        animator.SetBool("selected", false);
     }
 }
